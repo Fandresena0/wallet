@@ -4,7 +4,6 @@ import interfaceGenerique.crudOperation;
 import lombok.AllArgsConstructor;
 import model.Compte;
 import model.Devise;
-import model.Transaction;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -14,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @AllArgsConstructor
-public class Comptecrud implements crudOperation {
+public class CompteService implements crudOperation {
 
     private Connection connection;
 
@@ -24,7 +23,7 @@ public class Comptecrud implements crudOperation {
         try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
             preparedStatement.setInt(1, toInsert.getId_compte());
             preparedStatement.setString(2, toInsert.getNom());
-            preparedStatement.setInt(3, toInsert.getSolde());
+            preparedStatement.setDouble(3, toInsert.getSolde());
             preparedStatement.setString(4, toInsert.getDevise().getNom()); // Modifie selon la structure de ta base de données
             preparedStatement.setString(5, toInsert.getType());
             preparedStatement.executeUpdate();
@@ -50,7 +49,7 @@ public class Comptecrud implements crudOperation {
     private Compte convertToCompte(ResultSet result) throws SQLException {
         int id_compte = result.getInt("id_compte");
         String nom = result.getString("nom");
-        Integer solde = result.getInt("solde");
+        Double solde = result.getDouble("solde");
         Devise devise = new Devise(result.getInt("id_devise"), result.getString("nom_devise"), result.getString("code_devise"));
         String type = result.getString("type");
 
@@ -70,5 +69,34 @@ public class Comptecrud implements crudOperation {
         return toDelete;
     }
 
-    
+    @Override
+    public Compte updateCompte(Compte existingCompte, Compte newCompteDetails) {
+        String sql = "UPDATE compte SET nom = ?, type = ?, devise = ? WHERE id_compte = ?";
+        try (PreparedStatement statement = connection.prepareStatement(sql)) {
+
+            statement.setString(1, newCompteDetails.getNom());
+            statement.setString(2, newCompteDetails.getType());
+            statement.setString(3, newCompteDetails.getDevise().getNom());
+            statement.setInt(4, existingCompte.getId_compte());
+
+
+            int rowsUpdated = statement.executeUpdate();
+            if (rowsUpdated > 0) {
+                existingCompte.setNom(newCompteDetails.getNom());
+                existingCompte.setType(newCompteDetails.getType());
+                existingCompte.setDevise(newCompteDetails.getDevise());
+
+                System.out.println("Le compte a été mis à jour avec succès.");
+            } else {
+                System.out.println("Aucune mise à jour effectuée. Vérifiez l'ID du compte.");
+            }
+            return existingCompte;
+        } catch (SQLException e) {
+            e.printStackTrace();
+
+            return existingCompte;
+        }
+    }
+
+
 }

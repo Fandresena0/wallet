@@ -1,8 +1,7 @@
 CREATE TABLE IF NOT EXISTS compte (
     id_compte serial PRIMARY KEY,
     nom_compte varchar(50),
-    solde_montant numeric(10,2),
-    solde_date_maj date,
+    solde double,
     id_transaction INT REFERENCES transaction(id_transaction) NOT NULL,
     id_devise INT REFERENCES devise(id_devise) NOT NULL,
     type_compte varchar(20) CHECK (type_compte IN ('Banque', 'Espèce', 'Mobile Money'))
