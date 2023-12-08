@@ -1,8 +1,15 @@
 CREATE TABLE IF NOT EXISTS compte (
-   id_compte serial  PRIMARY KEY,
-   nom_utilisateur varchar(50),
-   id_transaction INT REFERENCES transaction(id_transaction) NOT NULL
-   id_devise INT REFERENCES devise(id_devise) NOT NULL
-);
+    id_compte serial PRIMARY KEY,
+    nom_compte varchar(50),
+    solde_montant numeric(10,2),
+    solde_date_maj date,
+    id_transaction INT REFERENCES transaction(id_transaction) NOT NULL,
+    id_devise INT REFERENCES devise(id_devise) NOT NULL,
+    type_compte varchar(20) CHECK (type_compte IN ('Banque', 'Espèce', 'Mobile Money'))
+    );
 
-INSERT INTO compte VALUES ('Paris',3,1),('ROMAN',2,2),('Norman',4,3);
+INSERT INTO compte (nom_compte, solde_montant, solde_date_maj, id_transaction, id_devise, type_compte)
+VALUES
+    ('Compte Courant', 1000.00, '2023-12-08', 1, 1, 'Banque'),
+    ('Compte Épargne', 5000.00, '2023-12-08', 2, 2, 'Banque'),
+    ('Portefeuille', 200.00, '2023-12-08', 3, 3, 'Mobile Money');
