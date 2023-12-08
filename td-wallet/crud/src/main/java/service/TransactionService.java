@@ -20,13 +20,12 @@ public class TransactionService implements transactionOperation {
 
     @Override
     public Transaction create(Transaction toInsert) {
-        String query = "INSERT INTO transaction (id_transation, label, montant, dateHeure, type_transaction) VALUES (?, ?, ?, ?, ?)";
+        String query = "INSERT INTO transaction (label, montant, date_heure, type_transaction) VALUES (?, ?, ?, ?)";
         try (PreparedStatement preparedStatement = connection.prepareStatement(query, Statement.RETURN_GENERATED_KEYS)) {
-            preparedStatement.setInt(1, toInsert.getId_transaction());
-            preparedStatement.setString(2, toInsert.getLabel());
-            preparedStatement.setDouble(3, toInsert.getMontant());
-            preparedStatement.setObject(4, toInsert.getDateHeure());
-            preparedStatement.setBoolean(5, toInsert.isType_transaction());
+            preparedStatement.setString(1, toInsert.getLabel());
+            preparedStatement.setDouble(2, toInsert.getMontant());
+            preparedStatement.setObject(3, toInsert.getDateHeure());
+            preparedStatement.setBoolean(4, toInsert.isType_transaction());
             preparedStatement.executeUpdate();
 
             ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
@@ -289,7 +288,7 @@ public class TransactionService implements transactionOperation {
         }
     }
 
-    // ... (autres méthodes)
+
 
 
     private Transaction convertToTransaction(ResultSet result) throws SQLException {
