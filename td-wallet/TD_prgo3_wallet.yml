@@ -38,7 +38,7 @@ paths:
                 
   /solde/{dateMAJ}:
     get:
-      summary: get solde
+      summary: obtenir le solde
       description: retour le solde a la date donner
       operationId: getsolde
       parameters:
@@ -54,7 +54,30 @@ paths:
             application/Json:
               schema: 
                $ref: "#/components/schemas/solde"
-  
+  /account/solde:
+    get:
+      summary: obtenir le solde d'un compte
+      description: retour le solde a la date donner d'un compte
+      operationId: solde d'un compte
+      parameters:
+        - in: query
+          name: date avant
+          required: 
+          schema: 
+          $ref: "#/components/schemas/solde"
+        - in: query
+          name: date apres
+          required: 
+          schema: 
+          $ref: "#/components/schemas/solde"
+      responses:
+         200: 
+          description: solde à la date demander
+          content:
+            application/Json:
+              schema: 
+               $ref: "#/components/schemas/solde"
+
   
 
 components:
