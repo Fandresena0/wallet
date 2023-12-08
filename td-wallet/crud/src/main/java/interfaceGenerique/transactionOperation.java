@@ -2,6 +2,8 @@ package interfaceGenerique;
 
 import model.Compte;
 import model.Transaction;
+import model.TransferHistory;
+import service.TransactionService;
 
 import java.sql.SQLException;
 import java.time.LocalDateTime;
@@ -18,4 +20,7 @@ public interface transactionOperation {
     List<Transaction> getTransactionsBeforeDateTime(int compteId, LocalDateTime dateTime);
     double getSoldeAtDateTime(Compte compte, LocalDateTime dateTime);
     List<Double> getSoldeHistoryInDateTimeRange(Compte compte, LocalDateTime startDate, LocalDateTime endDate);
+
+    List<Transaction> getTransactionsInDateTimeRange(int compteId, LocalDateTime startDate, LocalDateTime endDate);
+    List<TransferHistory> getTransfertHistoryInDateTimeRange(LocalDateTime startDate, LocalDateTime endDate);
 }

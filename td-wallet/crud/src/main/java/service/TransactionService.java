@@ -3,6 +3,7 @@ package service;
 import interfaceGenerique.transactionOperation;
 import model.Compte;
 import model.Transaction;
+import model.TransferHistory;
 
 import java.sql.*;
 import java.time.LocalDateTime;
@@ -191,8 +192,8 @@ public class TransactionService implements transactionOperation {
 
         return soldeHistory;
     }
-
-    private List<Transaction> getTransactionsInDateTimeRange(int compteId, LocalDateTime startDate, LocalDateTime endDate) {
+    @Override
+    public List<Transaction> getTransactionsInDateTimeRange(int compteId, LocalDateTime startDate, LocalDateTime endDate) {
         List<Transaction> transactions = new ArrayList<>();
         String sql = "SELECT * FROM transaction WHERE id_compte = ? AND dateHeure >= ? AND dateHeure <= ?";
         try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
@@ -209,6 +210,88 @@ public class TransactionService implements transactionOperation {
         return transactions;
     }
 
+    public void effectuerTransfert(Compte compteDebiteur, Compte compteCrediteur, double montant) {
+        if (compteDebiteur.equals(compteCrediteur)) {
+            System.out.println("Impossible de transférer de l'argent vers le même compte.");
+            return;
+        }
+
+        Transaction transactionDebiteur = new Transaction(compteDebiteur.getId_compte(), "Transfert sortant", montant, LocalDateTime.now(), false);
+        Transaction transactionCrediteur = new Transaction(compteCrediteur.getId_compte(), "Transfert entrant", montant, LocalDateTime.now(), true);
+
+        try {
+            connection.setAutoCommit(false);
+
+            if ("Banque".equals(compteDebiteur.getType()) || compteDebiteur.getSolde() - montant >= 0) {
+                compteDebiteur.setSolde(compteDebiteur.getSolde() - montant);
+                compteDebiteur.getTransactions().add(transactionDebiteur);
+                enregistrerTransactionDansDB(transactionDebiteur, compteDebiteur);
+
+                compteCrediteur.setSolde(compteCrediteur.getSolde() + montant);
+                compteCrediteur.getTransactions().add(transactionCrediteur);
+                enregistrerTransactionDansDB(transactionCrediteur, compteCrediteur);
+
+                enregistrerTransfertDansHistorique(transactionDebiteur.getId_transaction(), transactionCrediteur.getId_transaction());
+
+                connection.commit();
+            } else {
+                System.out.println("Solde insuffisant pour effectuer le transfert.");
+                connection.rollback();
+            }
+        } catch (SQLException e) {
+            try {
+                connection.rollback();
+            } catch (SQLException rollbackException) {
+                rollbackException.printStackTrace();
+            }
+            e.printStackTrace();
+        } finally {
+            try {
+                connection.setAutoCommit(true);
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    @Override
+    public List<TransferHistory> getTransfertHistoryInDateTimeRange(LocalDateTime startDate, LocalDateTime endDate) {
+        List<TransferHistory> transferHistoryList = new ArrayList<>();
+
+        String sql = "SELECT * FROM TransferHistory WHERE dateTransfert BETWEEN ? AND ?";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+            preparedStatement.setObject(1, startDate);
+            preparedStatement.setObject(2, endDate);
+            ResultSet result = preparedStatement.executeQuery();
+
+            while (result.next()) {
+                TransferHistory transferHistory = new TransferHistory();
+                transferHistory.setId(result.getInt("id"));
+                transferHistory.setIdTransactionDebiteur(result.getInt("id_transaction_debiteur"));
+                transferHistory.setIdTransactionCrediteur(result.getInt("id_transaction_crediteur"));
+                transferHistory.setDateTransfert(result.getObject("dateTransfert", LocalDateTime.class));
+
+                transferHistoryList.add(transferHistory);
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return transferHistoryList;
+    }
+
+    private void enregistrerTransfertDansHistorique(int idTransactionDebiteur, int idTransactionCrediteur) throws SQLException {
+        String query = "INSERT INTO TransferHistory (id_transaction_debiteur, id_transaction_crediteur, dateTransfert) VALUES (?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
+            preparedStatement.setInt(1, idTransactionDebiteur);
+            preparedStatement.setInt(2, idTransactionCrediteur);
+            preparedStatement.setObject(3, LocalDateTime.now());
+            preparedStatement.executeUpdate();
+        }
+    }
+
+    // ... (autres méthodes)
+
+
     private Transaction convertToTransaction(ResultSet result) throws SQLException {
         int id_transaction = result.getInt("id_transaction");
         String label = result.getString("label");
@@ -218,4 +301,5 @@ public class TransactionService implements transactionOperation {
 
         return new Transaction(id_transaction, label, montant, dateHeure, type_transaction);
     }
+
 }
