@@ -19,14 +19,18 @@ public class CompteService implements crudOperation {
 
     @Override
     public Compte insert(Compte toInsert) {
-        String query = "INSERT INTO compte (id_compte, nom, solde, devise, type) VALUES (?, ?, ?, ?, ?)";
-        try (PreparedStatement preparedStatement = connection.prepareStatement(query)) {
-            preparedStatement.setInt(1, toInsert.getId_compte());
-            preparedStatement.setString(2, toInsert.getNom());
-            preparedStatement.setDouble(3, toInsert.getSolde());
-            preparedStatement.setString(4, toInsert.getDevise().getNom()); // Modifie selon la structure de ta base de données
-            preparedStatement.setString(5, toInsert.getType());
+        String query = "INSERT INTO compte (nom_compte, solde, id_devise, type_compte) VALUES (?, ?, ?, ?)";
+        try (PreparedStatement preparedStatement = connection.prepareStatement(query, PreparedStatement.RETURN_GENERATED_KEYS)) {
+            preparedStatement.setString(1, toInsert.getNom());
+            preparedStatement.setDouble(2, toInsert.getSolde());
+            preparedStatement.setInt(3, toInsert.getDevise().getId()); // Correction selon la structure de la table devise
+            preparedStatement.setString(4, toInsert.getType());
             preparedStatement.executeUpdate();
+
+            ResultSet generatedKeys = preparedStatement.getGeneratedKeys();
+            if (generatedKeys.next()) {
+                toInsert.setId_compte(generatedKeys.getInt(1));
+            }
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -76,7 +80,7 @@ public class CompteService implements crudOperation {
 
             statement.setString(1, newCompteDetails.getNom());
             statement.setString(2, newCompteDetails.getType());
-            statement.setString(3, newCompteDetails.getDevise().getNom());
+            statement.setInt(3, newCompteDetails.getDevise().getId());
             statement.setInt(4, existingCompte.getId_compte());
 
 
