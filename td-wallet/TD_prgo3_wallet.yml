@@ -76,7 +76,7 @@ paths:
           content:
             application/Json:
               schema: 
-               $ref: "#/components/schemas/solde"
+               $ref: "#/components/schemas/account"
 
   
 
