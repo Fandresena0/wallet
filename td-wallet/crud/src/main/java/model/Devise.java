@@ -10,5 +10,7 @@ import lombok.ToString;
 @Setter
 @ToString
 public class Devise {
-    private String type_devise;
+    private int id; // Identifiant de la devise
+    private String nom; // Nom de la devise (ex: Euro)
+    private String code; // Code de la devise (ex: EUR)
 }
