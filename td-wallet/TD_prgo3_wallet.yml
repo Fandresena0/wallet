@@ -1,0 +1,132 @@
+openapi: '3.0.2'
+info:
+  title: PROG3 -TD WALLET
+  version: '1.3.2'
+servers:
+  - url: https://api.server.test/v1
+paths:
+  /transaction/{id_transaction}/{id_account}:
+    put:
+      summary: effectuer un transaction
+      operationId: transaction du montant
+      parameters:
+        - in: path
+          name: id_transaction
+          required: true
+          schema:
+            type: string
+        - in: path
+          name: id_Account
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/Json:
+            schema:
+              type: array
+              items:
+                $ref: "#/components/schemas/account"
+      responses:
+        '200':
+          description: transaction succesfully
+          content:
+            application/Json:
+              schema: 
+                $ref: "#/components/schemas/account"
+
+                
+  /solde/{dateMAJ}:
+    get:
+      summary: obtenir le solde
+      description: retour le solde a la date donner
+      operationId: getsolde
+      parameters:
+        - in: path
+          name: date et heure
+          required: true
+          schema: 
+          $ref: "#/components/schemas/solde"
+      responses:
+        200: 
+          description: solde à la date demander
+          content:
+            application/Json:
+              schema: 
+               $ref: "#/components/schemas/solde"
+  /account/solde:
+    get:
+      summary: obtenir le solde d'un compte
+      description: retour le solde a la date donner d'un compte
+      operationId: solde d'un compte
+      parameters:
+        - in: query
+          name: date avant
+          required: 
+          schema: 
+          $ref: "#/components/schemas/solde"
+        - in: query
+          name: date apres
+          required: 
+          schema: 
+          $ref: "#/components/schemas/solde"
+      responses:
+         200: 
+          description: solde à la date demander
+          content:
+            application/Json:
+              schema: 
+               $ref: "#/components/schemas/account"
+
+components:
+    schemas:
+      devise:
+        type: object
+        properties:
+          id_device:
+            type: string
+          name:
+            type: string
+            example: euro
+          code:
+            type: string
+            example:  EUR
+      transaction:
+        type: object
+        properties:
+          id_transaction:
+            type: string
+          label:
+            type: string
+            example: pret bancaire
+          montant:
+            type: number
+          dateTransaction:
+            type: string
+          typeTransaction:
+            type: string
+      account:
+        description: presentation d'un compte 
+        allOf:
+        - $ref: "#/components/schemas/devise" 
+        - $ref: "#/components/schemas/solde"
+        - $ref: "#/components/schemas/transaction"  
+        - type: object
+          properties:
+            id_Account:
+              type: string
+            name:
+              type: string
+            typeAccounr:
+              type: string
+      solde:
+        properties:
+          montant:
+            type: number
+            example: 22344567
+          dateMAJ:
+            type: string
+            example: 2023-09-15 12:23 AM
+
+      
+      
