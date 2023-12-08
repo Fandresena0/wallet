@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,20 +15,20 @@ import java.util.List;
 @ToString
 public class Compte {
     private int id_compte;
-    private String nom; // Nom du compte (compte courant, compte épargne, etc.)
-    private Integer solde; // Caractéristiques du solde (montant et date de dernière mise à jour)
-    private List<Transaction> transactions; // Liste des transactions associées au compte
+    private String nom;
+    private Double solde;
+    private List<Transaction> transactions;
     private Devise devise;
-    private String type; // Type de compte : Banque, Espèce, Mobile Money, etc.
+    private String type;
 
-    // Constructeur sans l'objet Transaction pour l'instant (peut être ajouté si nécessaire)
-    public Compte(int id_compte, String nom, Integer solde, Devise devise, String type) {
+    public Compte(int id_compte, String nom, Double solde, Devise devise, String type) {
         this.id_compte = id_compte;
         this.nom = nom;
         this.solde = solde;
-        this.transactions = new ArrayList<>(); // Initialisation de la liste des transactions
+        this.transactions = new ArrayList<>();
         this.devise = devise;
         this.type = type;
     }
 }
+
 
